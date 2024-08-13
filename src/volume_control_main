@@ -5,8 +5,9 @@ from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 import numpy as np
+from system_settings import VIDEO_CAPTURE_DEVICE_INDEX, VOLUME_MIN, VOLUME_MAX, HAND_GESTURE_MIN_DISTANCE, HAND_GESTURE_MAX_DISTANCE
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(VIDEO_CAPTURE_DEVICE_INDEX)
 mpHands = mp.solutions.hands
 hands = mpHands.Hands()
 mpDraw = mp.solutions.drawing_utils
@@ -14,7 +15,7 @@ mpDraw = mp.solutions.drawing_utils
 devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
-volMin, volMax = volume.GetVolumeRange()[:2]
+volMin, volMax = VOLUME_MIN, VOLUME_MAX
 
 while True:
     success, img = cap.read()
@@ -30,18 +31,16 @@ while True:
                 lmList.append([id, cx, cy])
             mpDraw.draw_landmarks(img, handlandmark, mpHands.HAND_CONNECTIONS)
 
-    if lmList != []:
+    if lmList:
         x1, y1 = lmList[4][1], lmList[4][2]
         x2, y2 = lmList[8][1], lmList[8][2]
         cv2.circle(img, (x1, y1), 4, (255, 0, 0), cv2.FILLED)
         cv2.circle(img, (x2, y2), 4, (255, 0, 0), cv2.FILLED)
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
         length = hypot(x2 - x1, y2 - y1)
-        vol = np.interp(length, [15, 220], [volMin, volMax])
+        vol = np.interp(length, [HAND_GESTURE_MIN_DISTANCE, HAND_GESTURE_MAX_DISTANCE], [volMin, volMax])
         print(vol, length)
         volume.SetMasterVolumeLevel(vol, None)
-        # Hand range 15 - 220
-        # Volume range -63.5 - 0.0
 
     cv2.imshow('Image', img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
