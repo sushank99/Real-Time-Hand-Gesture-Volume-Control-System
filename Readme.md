@@ -22,4 +22,4 @@ This project implements a real-time hand gesture-based volume control system usi
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/hand-gesture-volume-control.git
+   git clone https://github.com/sushank99/Real-Time-Hand-Gesture-Volume-Control-System.git
